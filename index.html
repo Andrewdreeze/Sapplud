@@ -33,6 +33,15 @@
             background-color: #f8f9fa;
         }
 
+        .sub-section {
+            margin-bottom: 20px;
+        }
+
+        .sub-section h3 {
+            color: #4CAF50;
+            margin-bottom: 10px;
+        }
+
         .task-item {
             display: flex;
             align-items: center;
@@ -77,15 +86,6 @@
             color: #2c3e50;
         }
 
-        #meal-log {
-            width: 100%;
-            height: 100px;
-            margin: 10px 0;
-            padding: 10px;
-            border-radius: 5px;
-            border: 1px solid #ddd;
-        }
-
         .button-container {
             display: flex;
             justify-content: center;
@@ -124,11 +124,63 @@
 
         <div class="section">
             <h2>🍎 Hábitos Saludables</h2>
+            
+            <div class="sub-section">
+                <h3>🌅 Rutina Mañana</h3>
+                <div class="task-item">
+                    <input type="checkbox" id="make-bed">
+                    <label for="make-bed">Hacer la cama</label>
+                </div>
+                <div class="task-item">
+                    <input type="checkbox" id="morning-stretches">
+                    <label for="morning-stretches">Estiramientos y ejercicios para ciática</label>
+                </div>
+                <div class="task-item">
+                    <input type="checkbox" id="breakfast">
+                    <label for="breakfast">Tomar desayuno</label>
+                </div>
+            </div>
+
+            <div class="sub-section">
+                <h3>🌇 Rutina Tarde</h3>
+                <div class="task-item">
+                    <input type="checkbox" id="lunch">
+                    <label for="lunch">Almorzar</label>
+                </div>
+                <div class="task-item">
+                    <input type="checkbox" id="hobby">
+                    <label for="hobby">Dedicar tiempo a un hobby</label>
+                </div>
+                <div class="task-item">
+                    <input type="checkbox" id="afternoon-walk">
+                    <label for="afternoon-walk">Caminar</label>
+                </div>
+            </div>
+
+            <div class="sub-section">
+                <h3>🌃 Rutina Noche</h3>
+                <div class="task-item">
+                    <input type="checkbox" id="night-stretches">
+                    <label for="night-stretches">Estiramientos y ejercicios para ciática</label>
+                </div>
+                <div class="task-item">
+                    <input type="checkbox" id="brush-teeth">
+                    <label for="brush-teeth">Lavarse los dientes</label>
+                </div>
+                <div class="task-item">
+                    <input type="checkbox" id="read">
+                    <label for="read">Leer</label>
+                </div>
+                <div class="task-item">
+                    <input type="checkbox" id="sleep">
+                    <label for="sleep">Dormir</label>
+                </div>
+            </div>
+
             <div class="task-item">
                 <input type="checkbox" id="water">
                 <label for="water">2 litros de agua consumidos</label>
             </div>
-            <textarea id="meal-log" placeholder="Registro de comidas..."></textarea>
         </div>
 
         <button onclick="resetDay()">Reiniciar para mañana 🔄</button>
@@ -144,9 +196,6 @@
             });
         });
 
-        // Guardar registro de comidas
-        document.getElementById('meal-log').addEventListener('input', saveProgress);
-
         // Cargar progreso guardado
         function loadProgress() {
             const tasks = JSON.parse(localStorage.getItem('tasks')) || {};
@@ -157,9 +206,6 @@
                     element.parentElement.classList.toggle('completed', tasks[id]);
                 }
             });
-            
-            const meals = localStorage.getItem('meals');
-            if(meals) document.getElementById('meal-log').value = meals;
         }
 
         // Guardar progreso
@@ -168,15 +214,12 @@
             document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
                 tasks[checkbox.id] = checkbox.checked;
             });
-            
             localStorage.setItem('tasks', JSON.stringify(tasks));
-            localStorage.setItem('meals', document.getElementById('meal-log').value);
         }
 
         // Reiniciar día
         function resetDay() {
             localStorage.removeItem('tasks');
-            localStorage.removeItem('meals');
             localStorage.removeItem('fastStart');
             location.reload();
         }
