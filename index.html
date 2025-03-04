@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rutina Saludable</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f8ff;
+        }
+
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #f8f9fa;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            padding: 15px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .task-item.completed {
+            background-color: #e8f5e9;
+            text-decoration: line-through;
+            color: #666;
+        }
+
+        input[type="checkbox"] {
+            margin-right: 15px;
+            transform: scale(1.3);
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            display: block;
+            margin: 20px auto;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .timer {
+            text-align: center;
+            font-size: 1.2em;
+            margin: 20px 0;
+            color: #2c3e50;
+        }
+
+        #meal-log {
+            width: 100%;
+            height: 100px;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Mi Rutina Saludable 💪</h1>
+        
+        <div class="timer" id="fasting-timer">
+            ⏳ Tiempo restante de ayuno: <span id="timer-display">--:--:--</span>
+        </div>
+
+        <div class="button-container">
+            <button onclick="startFasting()">Iniciar ayuno 🕒</button>
+            <button onclick="resetFasting()">Reiniciar ayuno 🔄</button>
+        </div>
+
+        <div class="section">
+            <h2>🏃 Ejercicio Diario</h2>
+            <div class="task-item">
+                <input type="checkbox" id="walking">
+                <label for="walking">Caminata 30-45 minutos</label>
+            </div>
+            <div class="task-item">
+                <input type="checkbox" id="stretching">
+                <label for="stretching">Estiramientos (10-15 min)</label>
+            </div>
+            <div class="task-item">
+                <input type="checkbox" id="strength">
+                <label for="strength">Ejercicios de fortalecimiento</label>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🍎 Hábitos Saludables</h2>
+            <div class="task-item">
+                <input type="checkbox" id="water">
+                <label for="water">2 litros de agua consumidos</label>
+            </div>
+            <textarea id="meal-log" placeholder="Registro de comidas..."></textarea>
+        </div>
+
+        <button onclick="resetDay()">Reiniciar para mañana 🔄</button>
+    </div>
+
+    <script>
+        // Guardar estado de las tareas
+        document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const taskItem = this.parentElement;
+                taskItem.classList.toggle('completed', this.checked);
+                saveProgress();
+            });
+        });
+
+        // Guardar registro de comidas
+        document.getElementById('meal-log').addEventListener('input', saveProgress);
+
+        // Cargar progreso guardado
+        function loadProgress() {
+            const tasks = JSON.parse(localStorage.getItem('tasks')) || {};
+            Object.keys(tasks).forEach(id => {
+                const element = document.getElementById(id);
+                if(element) {
+                    element.checked = tasks[id];
+                    element.parentElement.classList.toggle('completed', tasks[id]);
+                }
+            });
+            
+            const meals = localStorage.getItem('meals');
+            if(meals) document.getElementById('meal-log').value = meals;
+        }
+
+        // Guardar progreso
+        function saveProgress() {
+            const tasks = {};
+            document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                tasks[checkbox.id] = checkbox.checked;
+            });
+            
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+            localStorage.setItem('meals', document.getElementById('meal-log').value);
+        }
+
+        // Reiniciar día
+        function resetDay() {
+            localStorage.removeItem('tasks');
+            localStorage.removeItem('meals');
+            localStorage.removeItem('fastStart');
+            location.reload();
+        }
+
+        // Temporizador de ayuno
+        let fastingInterval;
+        function updateFastingTimer() {
+            const fastStart = parseInt(localStorage.getItem('fastStart'));
+            if (!fastStart) {
+                document.getElementById('timer-display').textContent = "--:--:--";
+                return;
+            }
+
+            const now = new Date().getTime();
+            const elapsed = now - fastStart;
+            const remaining = 14 * 60 * 60 * 1000 - elapsed; // 14 horas en milisegundos
+
+            if (remaining <= 0) {
+                document.getElementById('timer-display').textContent = "¡Ayuno completado! 🎉";
+                clearInterval(fastingInterval);
+                return;
+            }
+
+            const hours = Math.floor(remaining / (1000 * 60 * 60));
+            const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
+
+            document.getElementById('timer-display').textContent = 
+                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        // Iniciar ayuno
+        function startFasting() {
+            localStorage.setItem('fastStart', new Date().getTime());
+            clearInterval(fastingInterval);
+            fastingInterval = setInterval(updateFastingTimer, 1000);
+            updateFastingTimer();
+        }
+
+        // Reiniciar ayuno
+        function resetFasting() {
+            localStorage.removeItem('fastStart');
+            clearInterval(fastingInterval);
+            document.getElementById('timer-display').textContent = "--:--:--";
+        }
+
+        // Inicializar
+        loadProgress();
+        updateFastingTimer();
+        fastingInterval = setInterval(updateFastingTimer, 1000);
+    </script>
+</body>
+</html>
